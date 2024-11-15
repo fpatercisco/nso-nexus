@@ -1,0 +1,109 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0"
+                 servicepoint="vxlan-bgp-evpn">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <device>
+      <!--
+          Select the devices from some data structure in the service
+          model. In this skeleton the devices are specified in a leaf-list.
+          Select all devices in that leaf-list:
+      -->
+      <name>{/device}</name>
+      <config>
+        <!--
+            Add device-specific parameters here.
+            In this skeleton the service has a leaf "dummy"; use that
+            to set something on the device e.g.:
+            <ip-address-on-device>{/dummy}</ip-address-on-device>
+        -->
+        <vlan xmlns="http://tail-f.com/ned/cisco-nx">
+	  <vlan-list>
+	    <id>{/vlan}</id>
+	    <vn-segment>{/vni}</vn-segment>
+	  </vlan-list>
+	</vlan>
+	<evpn xmlns="http://tail-f.com/ned/cisco-nx">
+          <vni>
+            <id>{/vni}</id>
+            <l2/>
+            <rd>auto</rd>
+            <route-target>
+              <method>import</method>
+              <rt>auto</rt>
+            </route-target>
+            <route-target>
+              <method>export</method>
+              <rt>auto</rt>
+            </route-target>
+          </vni>
+	</evpn>
+        <vrf xmlns="http://tail-f.com/ned/cisco-nx">
+	  <context>
+            <id>{/vrf}</id>
+            <vni>{/vni}</vni>
+            <rd>auto</rd>
+            <address-family>
+	      <ipv4>
+                <unicast>
+                  <route-target>
+                    <method>both</method>
+                    <asn>auto</asn>
+                    <target-evpn>evpn</target-evpn>
+                  </route-target>
+                  <route-target>
+                    <method>both</method>
+                    <asn>auto</asn>
+                    <target-evpn>non-evpn</target-evpn>
+                  </route-target>
+                </unicast>
+	      </ipv4>
+	      <ipv6>
+                <unicast>
+                  <route-target>
+                    <method>both</method>
+                    <asn>auto</asn>
+                    <target-evpn>evpn</target-evpn>
+                  </route-target>
+                  <route-target>
+                    <method>both</method>
+                    <asn>auto</asn>
+                    <target-evpn>non-evpn</target-evpn>
+                  </route-target>
+                </unicast>
+	      </ipv6>
+            </address-family>
+          </context>
+	</vrf>
+        <interface xmlns="http://tail-f.com/ned/cisco-nx">
+          <Vlan>
+            <name>{/vlan}</name>
+            <vrf>
+	      <member>{/vrf}</member>
+            </vrf>
+            <ip>
+	      <address>
+                <ipaddr>{/dist-default-gw-ip}/{dist-default-gw-prefix-length}</ipaddr>
+	      </address>
+            </ip>
+            <fabric>
+	      <forwarding>
+                <mode>anycast-gateway</mode>
+	      </forwarding>
+            </fabric>
+          </Vlan>
+          <nve>
+            <name>1</name>
+            <host-reachability>
+	      <protocol>bgp</protocol>
+            </host-reachability>
+            <member>
+	      <vni>
+                <id>{/vni}</id>
+                <associate-vrf/>
+	      </vni>
+	    </member>
+	  </nve>
+	</interface>
+      </config>
+    </device>
+  </devices>
+</config-template>

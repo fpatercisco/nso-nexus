@@ -1,0 +1,57 @@
+module vxlan-bgp-evpn {
+  namespace "http://com/example/vxlanbgpevpn";
+  prefix vxlan-bgp-evpn;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  list vxlan-bgp-evpn {
+    key name;
+
+    uses ncs:service-data;
+    ncs:servicepoint "vxlan-bgp-evpn";
+
+    leaf name {
+      type string;
+    }
+
+    // may replace this with other ways of refering to the devices.
+    leaf-list device {
+      type leafref {
+        path "/ncs:devices/ncs:device/ncs:name";
+      }
+      tailf:info "Devices to configure with this vxlan-bgp-evpn service (VLAN+VNI+VRF+distributed default gateway)";
+    }
+
+    leaf vlan {
+      type int32;
+      tailf:info "VLAN id";
+    }
+    leaf vni {
+      type int32;
+      tailf:info "VNI id";
+    }
+    leaf vrf {
+      type string;
+      tailf:info "VRF name";
+    }
+    leaf dist-default-gw-ip {
+      type inet:ipv4-address;
+      tailf:info "IP address of the distributed default gateway SVI";
+    }
+    leaf dist-default-gw-prefix-length {
+      type int32 {
+	range "1 .. 32";
+      }
+      tailf:info "Prefix length of the distributed default gateway SVI IP address";
+    }
+
+  }
+}

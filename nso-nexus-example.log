@@ -1,0 +1,539 @@
+User admin last logged in 2024-11-15T18:20:26.954749+00:00, to nso, from 10.16.143.26 using cli-ssh
+admin connected from 10.16.143.26 using ssh on nso
+admin@ncs# show packages package package-version
+packages package cisco-nx-cli-5.25
+ package-version 5.25.21
+packages package port-vlan
+ package-version 1.0
+packages package vxlan-bgp-evpn
+ package-version 1.0
+admin@ncs# show devices list
+NAME                         ADDRESS         DESCRIPTION  NED ID             ADMIN STATE
+----------------------------------------------------------------------------------------
+site1-leafAccess-copenhagen  198.18.165.139  -            cisco-nx-cli-5.25  unlocked
+admin@ncs# devices check-sync
+sync-result {
+    device site1-leafAccess-copenhagen
+    result in-sync
+}
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config vlan
+devices device site1-leafAccess-copenhagen
+ config
+  vlan 1,995,997-999,2300
+  exit
+  vlan 111
+   vn-segment 1111
+  exit
+  vlan 2000
+   vn-segment 50000
+  exit
+  vlan 3100
+   vn-segment 31000
+  exit
+ !
+!
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config evpn
+devices device site1-leafAccess-copenhagen
+ config
+  evpn
+   vni 1111 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+   !
+   vni 31000 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+   !
+  !
+ !
+!
+admin@ncs# show running-config port-vlan
+% No entries found.
+admin@ncs# show running-config vxlan-bgp-evpn
+% No entries found.
+admin@ncs# config
+Entering configuration mode terminal
+admin@ncs(config)# vxlan-bgp-evpn demo-twos device site1-leafAccess-copenhagen ?
+Possible completions:
+  dist-default-gw-ip              IP address of the distributed default gateway SVI
+  dist-default-gw-prefix-length   Prefix length of the distributed default gateway SVI IP address
+  vlan                            VLAN id
+  vni                             VNI id
+  vrf                             VRF name
+  <cr>
+admin@ncs(config)# vxlan-bgp-evpn demo-twos device site1-leafAccess-copenhagen vlan 222 vni 2222 vrf TwosDemoVRF dist-default-gw-ip 2.2.2.2 dist-default-gw-prefix-length 22
+admin@ncs(config-vxlan-bgp-evpn-demo-twos)# commit dry-run
+cli {
+    local-node {
+        data  devices {
+                  device site1-leafAccess-copenhagen {
+                      config {
+                          vlan {
+             +                vlan-list 222 {
+             +                    vn-segment 2222;
+             +                }
+                          }
+                          evpn {
+             +                vni 2222 {
+             +                    l2;
+             +                    rd auto;
+             +                    route-target import auto;
+             +                    route-target export auto;
+             +                }
+                          }
+                          vrf {
+             +                context TwosDemoVRF {
+             +                    vni 2222;
+             +                    rd auto;
+             +                    address-family {
+             +                        ipv4 {
+             +                            unicast {
+             +                                route-target both auto evpn;
+             +                                route-target both auto non-evpn;
+             +                            }
+             +                        }
+             +                        ipv6 {
+             +                            unicast {
+             +                                route-target both auto evpn;
+             +                                route-target both auto non-evpn;
+             +                            }
+             +                        }
+             +                    }
+             +                }
+                          }
+                          interface {
+             +                Vlan 222 {
+             +                    vrf {
+             +                        member TwosDemoVRF;
+             +                    }
+             +                    ip {
+             +                        address {
+             +                            ipaddr 2.2.2.2/22;
+             +                        }
+             +                    }
+             +                    fabric {
+             +                        forwarding {
+             +                            mode anycast-gateway;
+             +                        }
+             +                    }
+             +                }
+                              nve 1 {
+                                  member {
+             +                        vni 2222 {
+             +                            associate-vrf;
+             +                        }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+             +vxlan-bgp-evpn demo-twos {
+             +    device [ site1-leafAccess-copenhagen ];
+             +    vlan 222;
+             +    vni 2222;
+             +    vrf TwosDemoVRF;
+             +    dist-default-gw-ip 2.2.2.2;
+             +    dist-default-gw-prefix-length 22;
+             +}
+    }
+}
+admin@ncs(config-vxlan-bgp-evpn-demo-twos)# commit dry-run outformat native
+native {
+    device {
+        name site1-leafAccess-copenhagen
+        data vlan 222
+              vn-segment 2222
+             exit
+             evpn
+              vni 2222 l2
+               rd auto
+               route-target import auto
+               route-target export auto
+              !
+             !
+             vrf context TwosDemoVRF
+              vni 2222
+              rd auto
+              address-family ipv4 unicast
+               route-target both auto evpn
+               route-target both auto
+              exit
+              address-family ipv6 unicast
+               route-target both auto evpn
+               route-target both auto
+              exit
+             exit
+             interface Vlan222
+              no shutdown
+              vrf member TwosDemoVRF
+              ip address 2.2.2.2/22
+              fabric forwarding mode anycast-gateway
+             exit
+             interface nve1
+              member vni 2222 associate-vrf
+              !
+             !
+    }
+}
+admin@ncs(config-vxlan-bgp-evpn-demo-twos)# commit | details
+applying transaction for running datastore usid=71 tid=5450 trace-id=f5f982a37bbc3db7dabf9de86ff3e173
+ 2024-11-15T18:32:30.842 waiting to apply... ok (0.000 s)
+entering validate phase
+ 2024-11-15T18:32:30.842 creating rollback checkpoint... ok (0.000 s)
+ 2024-11-15T18:32:30.842 creating rollback file... ok (0.001 s)
+ 2024-11-15T18:32:30.845 creating pre-transform checkpoint... ok (0.000 s)
+ 2024-11-15T18:32:30.845 run pre-transform validation... ok (0.001 s)
+ 2024-11-15T18:32:30.847 creating transform checkpoint... ok (0.000 s)
+ 2024-11-15T18:32:30.847 run transforms and transaction hooks...
+ 2024-11-15T18:32:30.848 taking service write lock... ok (0.000 s)
+ 2024-11-15T18:32:30.848 holding service write lock...
+ 2024-11-15T18:32:30.849 service /vxlan-bgp-evpn[name='demo-twos']: creating service... ok (0.015 s)
+ 2024-11-15T18:32:30.865 run transforms and transaction hooks: ok (0.017 s)
+ 2024-11-15T18:32:30.865 creating validation checkpoint... ok (0.000 s)
+ 2024-11-15T18:32:30.865 mark inactive... ok (0.000 s)
+ 2024-11-15T18:32:30.866 pre validate... ok (0.000 s)
+ 2024-11-15T18:32:30.867 run validation over the changeset... ok (0.001 s)
+ 2024-11-15T18:32:30.868 run dependency-triggered validation... ok (0.000 s)
+ 2024-11-15T18:32:30.869 check configuration policies... ok (0.000 s)
+ 2024-11-15T18:32:30.869 check for read-write conflicts... ok (0.000 s)
+ 2024-11-15T18:32:30.869 taking transaction lock... ok (0.000 s)
+ 2024-11-15T18:32:30.870 holding transaction lock...
+ 2024-11-15T18:32:30.870 check for read-write conflicts... ok (0.000 s)
+ 2024-11-15T18:32:30.870 applying service meta-data... ok (0.001 s)
+leaving validate phase (0.030 s)
+entering write-start phase
+ 2024-11-15T18:32:30.872 cdb: write-start
+ 2024-11-15T18:32:30.873 service-manager: write-start
+ 2024-11-15T18:32:30.873 device-manager: write-start
+ 2024-11-15T18:32:30.874 cdb: match subscribers... ok (0.000 s)
+ 2024-11-15T18:32:30.874 cdb: create pre commit running... ok (0.000 s)
+ 2024-11-15T18:32:30.874 cdb: write changeset... ok (0.000 s)
+ 2024-11-15T18:32:30.875 check data kickers... ok (0.000 s)
+leaving write-start phase (0.003 s)
+entering prepare phase
+ 2024-11-15T18:32:30.875 cdb: prepare
+ 2024-11-15T18:32:30.881 device-manager: prepare
+ 2024-11-15T18:32:34.892 device site1-leafAccess-copenhagen: push configuration...
+leaving prepare phase (9.388 s)
+entering commit phase
+ 2024-11-15T18:32:40.264 cdb: commit
+ 2024-11-15T18:32:40.265 cdb: switch to new running... ok (0.004 s)
+ 2024-11-15T18:32:40.275 device-manager: commit
+ 2024-11-15T18:32:46.358 device site1-leafAccess-copenhagen: push configuration: ok (11.465 s)
+ 2024-11-15T18:32:50.546 holding service write lock: ok (19.698 s)
+ 2024-11-15T18:32:50.546 holding transaction lock: ok (19.676 s)
+leaving commit phase (10.282 s)
+applying transaction for running datastore usid=71 tid=5450 trace-id=f5f982a37bbc3db7dabf9de86ff3e173 (19.704 s)
+Commit complete.
+admin@ncs(config-vxlan-bgp-evpn-demo-twos)#
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config vrf
+devices device site1-leafAccess-copenhagen
+ config
+  vrf context management
+   ip route 0.0.0.0/0 198.18.128.1
+  exit
+  vrf context S1L1host
+   rd auto
+  exit
+  vrf context TwosDemoVRF
+   vni 2222
+   rd  auto
+   address-family ipv4 unicast
+    route-target both auto evpn
+    route-target both auto non-evpn
+   exit
+   address-family ipv6 unicast
+    route-target both auto evpn
+    route-target both auto non-evpn
+   exit
+  exit
+  vrf context devtest
+   vni 1111
+   rd  auto
+   address-family ipv4 unicast
+    route-target both auto evpn
+    route-target both auto non-evpn
+   exit
+   address-family ipv6 unicast
+    route-target both auto evpn
+    route-target both auto non-evpn
+   exit
+  exit
+  vrf context spirentTest
+   vni 50000
+   rd  auto
+   address-family ipv4 unicast
+    route-target both auto evpn
+    route-target both auto non-evpn
+   exit
+   address-family ipv6 unicast
+    route-target both auto evpn
+    route-target both auto non-evpn
+   exit
+  exit
+ !
+!
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config vlan
+devices device site1-leafAccess-copenhagen
+ config
+  vlan 1,995,997-999,2300
+  exit
+  vlan 111
+   vn-segment 1111
+  exit
+  vlan 222
+   vn-segment 2222
+  exit
+  vlan 2000
+   vn-segment 50000
+  exit
+  vlan 3100
+   vn-segment 31000
+  exit
+ !
+!
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config interface Vlan 222
+devices device site1-leafAccess-copenhagen
+ config
+  interface Vlan222
+   no shutdown
+   vrf member TwosDemoVRF
+   ip address 2.2.2.2/22
+   fabric forwarding mode anycast-gateway
+  exit
+ !
+!
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config interface nve 1
+devices device site1-leafAccess-copenhagen
+ config
+  interface nve1
+   host-reachability protocol bgp
+   member vni 1111 associate-vrf
+   !
+   member vni 2222 associate-vrf
+   !
+   member vni 31000
+    ingress-replication protocol bgp
+   !
+   member vni 50000 associate-vrf
+   !
+   no shutdown
+   source-interface loopback1
+  !
+ !
+!
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config vlan
+devices device site1-leafAccess-copenhagen
+ config
+  vlan 1,995,997-999,2300
+  exit
+  vlan 111
+   vn-segment 1111
+  exit
+  vlan 222
+   vn-segment 2222
+  exit
+  vlan 2000
+   vn-segment 50000
+  exit
+  vlan 3100
+   vn-segment 31000
+  exit
+ !
+!
+admin@ncs# show running-config vxlan-bgp-evpn
+vxlan-bgp-evpn demo-twos
+ device                        [ site1-leafAccess-copenhagen ]
+ vlan                          222
+ vni                           2222
+ vrf                           TwosDemoVRF
+ dist-default-gw-ip            2.2.2.2
+ dist-default-gw-prefix-length 22
+!
+admin@ncs# show running-config port-vlan
+% No entries found.
+admin@ncs# config
+Entering configuration mode terminal
+admin@ncs(config)# port-vlan demo-twos device site1-leafAccess-copenhagen ?
+Possible completions:
+  description   Description to put on the ports
+  port-id       Ethernet port ID, i.e.
+  vlan          VLAN id to put the ports in
+  <cr>
+admin@ncs(config)# port-vlan demo-twos device site1-leafAccess-copenhagen vlan 222 port-id [ 1/20 1/21 1/22 ] description "VLAN 222 configured by NSO demo"
+admin@ncs(config-port-vlan-demo-twos)# commit dry-run
+cli {
+    local-node {
+        data  devices {
+                  device site1-leafAccess-copenhagen {
+                      config {
+                          interface {
+                              Ethernet 1/20 {
+                                  enable {
+             -                        switchport false;
+             +                        switchport true;
+                                  }
+                                  switchport {
+                                      access {
+             +                            vlan 222;
+                                      }
+                                  }
+             +                    description "VLAN 222 configured by NSO demo";
+                              }
+                              Ethernet 1/21 {
+                                  enable {
+             -                        switchport false;
+             +                        switchport true;
+                                  }
+                                  switchport {
+                                      access {
+             +                            vlan 222;
+                                      }
+                                  }
+             +                    description "VLAN 222 configured by NSO demo";
+                              }
+                              Ethernet 1/22 {
+                                  enable {
+             -                        switchport false;
+             +                        switchport true;
+                                  }
+                                  switchport {
+                                      access {
+             +                            vlan 222;
+                                      }
+                                  }
+             +                    description "VLAN 222 configured by NSO demo";
+                              }
+                          }
+                      }
+                  }
+              }
+             +port-vlan demo-twos {
+             +    device [ site1-leafAccess-copenhagen ];
+             +    port-id [ 1/20 1/21 1/22 ];
+             +    description "VLAN 222 configured by NSO demo";
+             +    vlan 222;
+             +}
+    }
+}
+admin@ncs(config-port-vlan-demo-twos)# commit dry-run outformat native
+native {
+    device {
+        name site1-leafAccess-copenhagen
+        data interface Ethernet1/20
+              switchport
+              switchport access vlan 222
+              description VLAN 222 configured by NSO demo
+              shutdown
+             exit
+             interface Ethernet1/21
+              switchport
+              switchport access vlan 222
+              description VLAN 222 configured by NSO demo
+              shutdown
+             exit
+             interface Ethernet1/22
+              switchport
+              switchport access vlan 222
+              description VLAN 222 configured by NSO demo
+              shutdown
+             exit
+    }
+}
+admin@ncs(config-port-vlan-demo-twos)# commit | details
+applying transaction for running datastore usid=71 tid=5759 trace-id=be9c3f1ffb57f095938fa13008e565c0
+ 2024-11-15T19:08:55.957 waiting to apply... ok (0.000 s)
+entering validate phase
+ 2024-11-15T19:08:55.957 creating rollback checkpoint... ok (0.000 s)
+ 2024-11-15T19:08:55.958 creating rollback file... ok (0.004 s)
+ 2024-11-15T19:08:55.963 creating pre-transform checkpoint... ok (0.000 s)
+ 2024-11-15T19:08:55.963 run pre-transform validation... ok (0.001 s)
+ 2024-11-15T19:08:55.965 creating transform checkpoint... ok (0.000 s)
+ 2024-11-15T19:08:55.965 run transforms and transaction hooks...
+ 2024-11-15T19:08:55.968 taking service write lock... ok (0.000 s)
+ 2024-11-15T19:08:55.968 holding service write lock...
+ 2024-11-15T19:08:55.970 service /port-vlan[name='demo-twos']: creating service... ok (0.013 s)
+ 2024-11-15T19:08:55.984 run transforms and transaction hooks: ok (0.018 s)
+ 2024-11-15T19:08:55.984 creating validation checkpoint... ok (0.000 s)
+ 2024-11-15T19:08:55.984 mark inactive... ok (0.000 s)
+ 2024-11-15T19:08:55.985 pre validate... ok (0.000 s)
+ 2024-11-15T19:08:55.986 run validation over the changeset... ok (0.001 s)
+ 2024-11-15T19:08:55.987 run dependency-triggered validation... ok (0.000 s)
+ 2024-11-15T19:08:55.988 check configuration policies... ok (0.000 s)
+ 2024-11-15T19:08:55.988 check for read-write conflicts... ok (0.000 s)
+ 2024-11-15T19:08:55.989 taking transaction lock... ok (0.000 s)
+ 2024-11-15T19:08:55.989 holding transaction lock...
+ 2024-11-15T19:08:55.989 check for read-write conflicts... ok (0.000 s)
+ 2024-11-15T19:08:55.990 applying service meta-data... ok (0.004 s)
+leaving validate phase (0.039 s)
+entering write-start phase
+ 2024-11-15T19:08:55.997 cdb: write-start
+ 2024-11-15T19:08:55.998 service-manager: write-start
+ 2024-11-15T19:08:55.998 device-manager: write-start
+ 2024-11-15T19:08:56.000 cdb: match subscribers... ok (0.000 s)
+ 2024-11-15T19:08:56.000 cdb: create pre commit running... ok (0.000 s)
+ 2024-11-15T19:08:56.000 cdb: write changeset... ok (0.000 s)
+ 2024-11-15T19:08:56.001 check data kickers... ok (0.000 s)
+leaving write-start phase (0.004 s)
+entering prepare phase
+ 2024-11-15T19:08:56.001 cdb: prepare
+ 2024-11-15T19:08:56.006 device-manager: prepare
+ 2024-11-15T19:09:04.074 device site1-leafAccess-copenhagen: push configuration...
+leaving prepare phase (13.159 s)
+entering commit phase
+ 2024-11-15T19:09:09.161 cdb: commit
+ 2024-11-15T19:09:09.161 cdb: switch to new running... ok (0.003 s)
+ 2024-11-15T19:09:09.170 device-manager: commit
+ 2024-11-15T19:09:15.263 device site1-leafAccess-copenhagen: push configuration: ok (11.189 s)
+ 2024-11-15T19:09:20.306 holding service write lock: ok (24.338 s)
+ 2024-11-15T19:09:20.306 holding transaction lock: ok (24.316 s)
+leaving commit phase (11.145 s)
+applying transaction for running datastore usid=71 tid=5759 trace-id=be9c3f1ffb57f095938fa13008e565c0 (24.349 s)
+Commit complete.
+admin@ncs(config-port-vlan-demo-twos)#
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config interface Ethernet 1/20
+devices device site1-leafAccess-copenhagen
+ config
+  interface Ethernet1/20
+   switchport
+   switchport access vlan 222
+   shutdown
+   description VLAN 222 configured by NSO demo
+  exit
+ !
+!
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config interface Ethernet 1/21
+devices device site1-leafAccess-copenhagen
+ config
+  interface Ethernet1/21
+   switchport
+   switchport access vlan 222
+   shutdown
+   description VLAN 222 configured by NSO demo
+  exit
+ !
+!
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config interface Ethernet 1/22
+devices device site1-leafAccess-copenhagen
+ config
+  interface Ethernet1/22
+   switchport
+   switchport access vlan 222
+   shutdown
+   description VLAN 222 configured by NSO demo
+  exit
+ !
+!
+admin@ncs# show running-config devices device site1-leafAccess-copenhagen config interface Ethernet 1/23
+devices device site1-leafAccess-copenhagen
+ config
+  interface Ethernet1/23
+   no switchport
+   shutdown
+  exit
+ !
+!
+admin@ncs#

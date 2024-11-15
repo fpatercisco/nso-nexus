@@ -1,0 +1,50 @@
+module port-vlan {
+  namespace "http://com/example/portvlan";
+  prefix port-vlan;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  list port-vlan {
+    key name;
+
+    uses ncs:service-data;
+    ncs:servicepoint "port-vlan";
+
+    leaf name {
+      type string;
+    }
+
+    // may replace this with other ways of refering to the devices.
+    leaf-list device {
+      type leafref {
+        path "/ncs:devices/ncs:device/ncs:name";
+      }
+    }
+
+    // replace with your own stuff here
+    leaf-list port-id {
+      type string {
+	pattern '[0-9]+/[0-9]+';
+      }
+      tailf:info "Ethernet port ID, i.e. '1/32'";
+    }
+    leaf description {
+      type string;
+      tailf:info "Description to put on the ports";
+    }
+    leaf vlan {
+      type int32 {
+	range "1 .. 4096";
+      }
+      tailf:info "VLAN id to put the ports in";
+    }
+  }
+}

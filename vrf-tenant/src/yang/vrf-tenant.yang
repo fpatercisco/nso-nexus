@@ -1,0 +1,47 @@
+module vrf-tenant {
+  namespace "http://com/example/vrftenant";
+  prefix vrf-tenant;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  list vrf-tenant {
+    key name;
+
+    uses ncs:service-data;
+    ncs:servicepoint "vrf-tenant";
+
+    leaf name {
+      type string;
+    }
+
+    // may replace this with other ways of refering to the devices.
+    leaf-list device {
+      type leafref {
+        path "/ncs:devices/ncs:device/ncs:name";
+      }
+      tailf:info "Devices to configure with this VRF/tenant on";
+    }
+
+    leaf vlan {
+      type int32;
+      tailf:info "VLAN id";
+    }
+    leaf vni {
+      type int32;
+      tailf:info "VNI id";
+    }
+    leaf vrf {
+      type string;
+      tailf:info "VRF name";
+    }
+
+  }
+}

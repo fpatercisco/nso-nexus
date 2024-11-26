@@ -1,0 +1,57 @@
+module L3-interface-in-vrf {
+  namespace "http://com/example/L3interfaceinvrf";
+  prefix L3-interface-in-vrf;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  list L3-interface-in-vrf {
+    key name;
+
+    uses ncs:service-data;
+    ncs:servicepoint "L3-interface-in-vrf";
+
+    leaf name {
+      type string;
+    }
+
+    // may replace this with other ways of refering to the devices.
+    leaf-list device {
+      type leafref {
+        path "/ncs:devices/ncs:device/ncs:name";
+      }
+      tailf:info "Devices to configure this L3 interface for this VRF on";
+    }
+
+    leaf vlan {
+      type int32;
+      tailf:info "VLAN id";
+    }
+    leaf vni {
+      type int32;
+      tailf:info "VNI id";
+    }
+    leaf vrf {
+      type string;
+      tailf:info "VRF name";
+    }
+    leaf ip {
+      type inet:ipv4-address;
+      tailf:info "IP address of the SVI";
+    }
+    leaf ip-netmask {
+      type int32 {
+	range "1 .. 32";
+      }
+      tailf:info "CIDR Netmask of SVI IP address";
+    }
+
+  }
+}
